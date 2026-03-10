@@ -8,10 +8,12 @@ namespace WebSafeDockingAPI.Services
     public class UsuarioService
     {
         private readonly IUsuarioRepository _repository;
+        private readonly PasswordHasherService _passwordHasher;
 
-        public UsuarioService(IUsuarioRepository repository)
+        public UsuarioService(IUsuarioRepository repository, PasswordHasherService passwordHasher)
         {
             _repository = repository;
+            _passwordHasher = passwordHasher;
         }
 
         /// <summary>
@@ -30,6 +32,12 @@ namespace WebSafeDockingAPI.Services
         {
             var novoUsuario = dto.ToEntity();
 
+            // Se a senha foi informada, gera o hash antes de salvar
+            if (!string.IsNullOrEmpty(dto.SenhaHash))
+            {
+                novoUsuario.SenhaHash = _passwordHasher.HashPassword(dto.SenhaHash);
+            }
+
             var usuarioCriado = await _repository.CreateAsync(novoUsuario);
 
             return UsuarioResponseDTO.FromUsuario(usuarioCriado);
@@ -47,7 +55,13 @@ namespace WebSafeDockingAPI.Services
             usuarioExistente.Nome = dto.Nome;
             usuarioExistente.Cpf = dto.Cpf;
             usuarioExistente.NivelAcesso = dto.NivelAcesso;
-            usuarioExistente.SenhaHash = dto.SenhaHash;
+
+            // Se a senha foi informada, gera o hash; senão, mantém a senha atual
+            if (!string.IsNullOrEmpty(dto.SenhaHash))
+            {
+                usuarioExistente.SenhaHash = _passwordHasher.HashPassword(dto.SenhaHash);
+            }
+
             usuarioExistente.Telefone = dto.Telefone;
             usuarioExistente.Email = dto.Email;
             usuarioExistente.RazaoSocial = dto.RazaoSocial;

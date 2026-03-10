@@ -13,6 +13,7 @@ namespace WebSafeDockingAPI.Data
         public DbSet<MooringPattern> MooringPatterns { get; set; }
         public DbSet<AlarmThreshold> AlarmThresholds { get; set; }
         public DbSet<Usuario> Usuarios { get; set; }
+        public DbSet<RefreshToken> RefreshTokens { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

@@ -1,4 +1,7 @@
+using System.Text;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using WebSafeDockingAPI.Data;
 using WebSafeDockingAPI.Models;
 using WebSafeDockingAPI.Repositories;
@@ -35,6 +38,11 @@ builder.Services.AddScoped<AlarmThresholdService>();
 builder.Services.AddScoped<IUsuarioRepository, UsuarioRepository>();
 builder.Services.AddScoped<UsuarioService>();
 
+// ---- Repository e Service para Autenticação (JWT) ----
+builder.Services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
+builder.Services.AddScoped<PasswordHasherService>();
+builder.Services.AddScoped<AuthService>();
+
 // ---- Configuração do Modbus ----
 // Mapeia as configurações do appsettings.json para a classe ModbusSettings
 builder.Services.Configure<ModbusSettings>(
@@ -48,6 +56,44 @@ builder.Services.AddSingleton<IModbusReaderService, ModbusReaderService>();
 
 // Registra o serviço de polling que lê dados a cada segundo
 builder.Services.AddHostedService<ModbusPollingService>();
+
+// ---- Configuração de Autenticação JWT ----
+var jwtKey = builder.Configuration["Jwt:Key"]
+    ?? throw new InvalidOperationException("Chave JWT não configurada no appsettings.json (Jwt:Key)");
+
+builder.Services.AddAuthentication(options =>
+{
+    // Define JWT como o esquema padrão de autenticação
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+    // Em desenvolvimento, permite HTTP; em produção, exige HTTPS
+    options.RequireHttpsMetadata = !builder.Environment.IsDevelopment();
+    options.SaveToken = true;
+
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        // Valida a assinatura do token (garante que não foi alterado)
+        ValidateIssuerSigningKey = true,
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey)),
+
+        // Valida quem emitiu o token
+        ValidateIssuer = true,
+        ValidIssuer = builder.Configuration["Jwt:Issuer"],
+
+        // Valida para quem o token foi emitido
+        ValidateAudience = true,
+        ValidAudience = builder.Configuration["Jwt:Audience"],
+
+        // Valida se o token não expirou
+        ValidateLifetime = true,
+        ClockSkew = TimeSpan.Zero // Sem tolerância de tempo extra
+    };
+});
+
+builder.Services.AddAuthorization();
 
 // ---- Configuração da API ----
 builder.Services.AddControllers();
@@ -69,6 +115,10 @@ var app = builder.Build();
 
 // ---- Pipeline HTTP ----
 app.UseCors();
+
+// Autenticação e Autorização JWT (a ordem importa!)
+app.UseAuthentication();
+app.UseAuthorization();
 
 if (app.Environment.IsDevelopment())
 {
