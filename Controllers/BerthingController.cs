@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using WebSafeDockingAPI.Models;
 using WebSafeDockingAPI.Services;
@@ -9,6 +10,7 @@ namespace WebSafeDockingAPI.Controllers;
 /// </summary>
 [ApiController]
 [Route("api/[controller]")]
+[Authorize]
 public class BerthingController : ControllerBase
 {
     private readonly IModbusReaderService _reader;

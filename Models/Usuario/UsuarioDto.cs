@@ -32,9 +32,6 @@ namespace WebSafeDockingAPI.Models
         [EmailAddress(ErrorMessage = "O e-mail informado não é válido.")]
         public string? Email { get; set; }
 
-        [StringLength(250, ErrorMessage = "A razão social deve ter no máximo 250 caracteres.")]
-        public string? RazaoSocial { get; set; }
-
         public bool? Ativo { get; set; }
 
         /// <summary>
@@ -51,7 +48,6 @@ namespace WebSafeDockingAPI.Models
                 SenhaHash = this.SenhaHash,
                 Telefone = this.Telefone,
                 Email = this.Email,
-                RazaoSocial = this.RazaoSocial,
                 Ativo = this.Ativo
             };
         }
@@ -85,7 +81,6 @@ namespace WebSafeDockingAPI.Models
                 NivelAcesso = usuario.NivelAcesso,
                 Telefone = usuario.Telefone,
                 Email = usuario.Email,
-                RazaoSocial = usuario.RazaoSocial,
                 Ativo = usuario.Ativo
             };
         }

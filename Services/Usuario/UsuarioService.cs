@@ -64,7 +64,6 @@ namespace WebSafeDockingAPI.Services
 
             usuarioExistente.Telefone = dto.Telefone;
             usuarioExistente.Email = dto.Email;
-            usuarioExistente.RazaoSocial = dto.RazaoSocial;
             usuarioExistente.Ativo = dto.Ativo;
 
             var atualizado = await _repository.UpdateAsync(usuarioExistente);

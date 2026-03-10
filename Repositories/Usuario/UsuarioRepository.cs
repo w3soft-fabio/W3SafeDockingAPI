@@ -61,7 +61,6 @@ namespace WebSafeDockingAPI.Repositories
                     (u.Nome != null && u.Nome.Contains(searchTerm)) ||
                     (u.Email != null && u.Email.Contains(searchTerm)) ||
                     (u.Cpf != null && u.Cpf.Contains(searchTerm)) ||
-                    (u.RazaoSocial != null && u.RazaoSocial.Contains(searchTerm)) ||
                     (u.NivelAcesso != null && u.NivelAcesso.Contains(searchTerm))
                 );
             }

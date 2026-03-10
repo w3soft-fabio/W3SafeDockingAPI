@@ -35,10 +35,6 @@ namespace WebSafeDockingAPI.Models
         [Column("email")]
         public string? Email { get; set; }
 
-        [StringLength(250)]
-        [Column("razaoSocial")]
-        public string? RazaoSocial { get; set; }
-
         [Column("ativo")]
         public bool? Ativo { get; set; }
     }

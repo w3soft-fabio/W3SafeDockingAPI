@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using WebSafeDockingAPI.Models;
 using WebSafeDockingAPI.Models.Common;
@@ -7,6 +8,7 @@ namespace WebSafeDockingAPI.Controllers
 {
     [ApiController]
     [Route("api/ships")]
+    [Authorize]
     public class ShipController : ControllerBase
     {
         private readonly ShipService _service;

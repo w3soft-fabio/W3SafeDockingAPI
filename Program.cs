@@ -2,6 +2,7 @@ using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 using WebSafeDockingAPI.Data;
 using WebSafeDockingAPI.Models;
 using WebSafeDockingAPI.Repositories;
@@ -98,7 +99,34 @@ builder.Services.AddAuthorization();
 // ---- Configuração da API ----
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(); // Documentação automática da API
+builder.Services.AddSwaggerGen(options =>
+{
+    // Configura o botão "Authorize" no Swagger para JWT Bearer.
+    options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Name = "Authorization",
+        Description = "Informe o token JWT no formato: Bearer {seu_token}",
+        In = ParameterLocation.Header,
+        Type = SecuritySchemeType.Http,
+        Scheme = "bearer",
+        BearerFormat = "JWT"
+    });
+
+    options.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            Array.Empty<string>()
+        }
+    });
+}); // Documentação automática da API
 
 // ---- CORS (permite Flutter e qualquer frontend acessar a API) ----
 builder.Services.AddCors(options =>
