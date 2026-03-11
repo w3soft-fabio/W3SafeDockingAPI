@@ -142,6 +142,7 @@ builder.Services.AddCors(options =>
 var app = builder.Build();
 
 // ---- Pipeline HTTP ----
+app.UseHttpsRedirection();
 app.UseCors();
 
 // Autenticação e Autorização JWT (a ordem importa!)

@@ -135,6 +135,8 @@ namespace WebSafeDockingAPI.Services
             // 3. Montar a resposta
             return new LoginResponse
             {
+                UsuarioId = usuario.Id,
+                Cpf = usuario.Cpf,
                 Token = accessToken,
                 RefreshToken = refreshToken,
                 Expiracao = expiracao,

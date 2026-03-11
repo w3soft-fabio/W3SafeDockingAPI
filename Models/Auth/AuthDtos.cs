@@ -22,10 +22,13 @@ namespace WebSafeDockingAPI.Models
     /// </summary>
     public class LoginResponse
     {
+        public int UsuarioId { get; set; }
         /// <summary>
         /// Access Token JWT - usado no header Authorization das requisições.
         /// Duração: 1 hora.
         /// </summary>
+        /// 
+        public string Cpf { get; set; } = string.Empty;
         public string Token { get; set; } = string.Empty;
 
         /// <summary>
