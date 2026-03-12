@@ -14,10 +14,17 @@ namespace WebSafeDockingAPI.Data
         public DbSet<AlarmThreshold> AlarmThresholds { get; set; }
         public DbSet<Usuario> Usuarios { get; set; }
         public DbSet<RefreshToken> RefreshTokens { get; set; }
+        public DbSet<BerthSnapshot> BerthSnapshots { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+
+            modelBuilder.Entity<BerthSnapshot>(entity =>
+            {
+                entity.HasIndex(e => new { e.BercoId, e.CapturedAt })
+                      .HasDatabaseName("idx_berco_captured");
+            });
         }
     }
 }

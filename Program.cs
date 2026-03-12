@@ -40,6 +40,10 @@ builder.Services.AddScoped<AlarmThresholdService>();
 builder.Services.AddScoped<IUsuarioRepository, UsuarioRepository>();
 builder.Services.AddScoped<UsuarioService>();
 
+// ---- Repository e Service para BerthSnapshot ----
+builder.Services.AddScoped<IBerthSnapshotRepository, BerthSnapshotRepository>();
+builder.Services.AddScoped<BerthSnapshotService>();
+
 // ---- Repository e Service para Autenticação (JWT) ----
 builder.Services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
 builder.Services.AddScoped<PasswordHasherService>();
