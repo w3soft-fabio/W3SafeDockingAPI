@@ -60,6 +60,9 @@ builder.Services.Configure<ModbusSettings>(
 builder.Services.AddSingleton<IModbusConnectionService, FakeModbusConnectionService>();
 builder.Services.AddSingleton<IModbusReaderService, ModbusReaderService>();
 
+// Registra o notificador de snapshots (pub/sub para SSE)
+builder.Services.AddSingleton<SnapshotNotifierService>();
+
 // Registra o serviço de polling que lê dados a cada segundo
 builder.Services.AddHostedService<ModbusPollingService>();
 
