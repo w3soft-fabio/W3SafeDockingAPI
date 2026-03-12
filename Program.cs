@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using WebSafeDockingAPI.Data;
+using WebSafeDockingAPI.Filters;
 using WebSafeDockingAPI.Models;
 using WebSafeDockingAPI.Repositories;
 using WebSafeDockingAPI.Services;
@@ -97,7 +98,10 @@ builder.Services.AddAuthentication(options =>
 builder.Services.AddAuthorization();
 
 // ---- Configuração da API ----
-builder.Services.AddControllers();
+builder.Services.AddControllers(options =>
+{
+    options.Filters.Add<GlobalExceptionFilter>();
+});
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {

@@ -12,7 +12,7 @@ namespace WebSafeDockingAPI.Repositories
         {
             _context = context;
         }
-
+    
         public async Task<Ship?> GetByIdAsync(int id)
         {
             return await _context.Ships.FindAsync(id);
