@@ -117,11 +117,25 @@ public class BerthingController : ControllerBase
         Response.Headers.CacheControl = "no-cache";
         Response.Headers.Connection = "keep-alive";
 
-        await foreach (var snapshot in _notifier.SubscribeAsync(cancellationToken))
+        // Desabilita o buffering de resposta para que cada write chegue ao cliente imediatamente
+        HttpContext.Features.Get<Microsoft.AspNetCore.Http.Features.IHttpResponseBodyFeature>()
+            ?.DisableBuffering();
+
+        // Faz flush dos headers para que o cliente saiba que a conexão SSE foi estabelecida
+        await Response.Body.FlushAsync(cancellationToken);
+
+        try
         {
-            var json = JsonSerializer.Serialize(snapshot);
-            await Response.WriteAsync($"data: {json}\n\n", cancellationToken);
-            await Response.Body.FlushAsync(cancellationToken);
+            await foreach (var snapshot in _notifier.SubscribeAsync(cancellationToken))
+            {
+                var json = JsonSerializer.Serialize(snapshot);
+                await Response.WriteAsync($"data: {json}\n\n", cancellationToken);
+                await Response.Body.FlushAsync(cancellationToken);
+            }
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            // Client disconnected — normal SSE lifecycle, not an error.
         }
     }
 
