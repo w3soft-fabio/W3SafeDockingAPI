@@ -17,6 +17,7 @@ namespace WebSafeDockingAPI.Data
         public DbSet<BerthSnapshot> BerthSnapshots { get; set; }
         public DbSet<MooringCompany> MooringCompanies { get; set; }
         public DbSet<ShippingAgency> ShippingAgencies { get; set; }
+        public DbSet<Berthing> Berthings { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
