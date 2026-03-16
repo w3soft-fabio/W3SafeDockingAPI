@@ -48,6 +48,10 @@ builder.Services.AddScoped<BerthSnapshotService>();
 builder.Services.AddScoped<IMooringCompanyRepository, MooringCompanyRepository>();
 builder.Services.AddScoped<MooringCompanyService>();
 
+// ---- Repository e Service para ShippingAgency ----
+builder.Services.AddScoped<IShippingAgencyRepository, ShippingAgencyRepository>();
+builder.Services.AddScoped<ShippingAgencyService>();
+
 // ---- Repository e Service para Autenticação (JWT) ----
 builder.Services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
 builder.Services.AddScoped<PasswordHasherService>();

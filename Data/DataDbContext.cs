@@ -16,6 +16,7 @@ namespace WebSafeDockingAPI.Data
         public DbSet<RefreshToken> RefreshTokens { get; set; }
         public DbSet<BerthSnapshot> BerthSnapshots { get; set; }
         public DbSet<MooringCompany> MooringCompanies { get; set; }
+        public DbSet<ShippingAgency> ShippingAgencies { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
