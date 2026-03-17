@@ -60,6 +60,18 @@ builder.Services.AddScoped<GrupoUsuarioService>();
 builder.Services.AddScoped<IBerthSnapshotRepository, BerthSnapshotRepository>();
 builder.Services.AddScoped<BerthSnapshotService>();
 
+// ---- Repository e Service para MooringCompany ----
+builder.Services.AddScoped<IMooringCompanyRepository, MooringCompanyRepository>();
+builder.Services.AddScoped<MooringCompanyService>();
+
+// ---- Repository e Service para ShippingAgency ----
+builder.Services.AddScoped<IShippingAgencyRepository, ShippingAgencyRepository>();
+builder.Services.AddScoped<ShippingAgencyService>();
+
+// ---- Repository e Service para Berthing ----
+builder.Services.AddScoped<IBerthingRepository, BerthingRepository>();
+builder.Services.AddScoped<BerthingService>();
+
 // ---- Repository e Service para Autenticação (JWT) ----
 builder.Services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
 builder.Services.AddScoped<PasswordHasherService>();
