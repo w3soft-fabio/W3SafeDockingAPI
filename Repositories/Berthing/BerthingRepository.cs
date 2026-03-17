@@ -79,7 +79,7 @@ namespace WebSafeDockingAPI.Repositories
 
             var totalCount = await query.CountAsync();
 
-            query = ApplySorting(query, sortBy, sortOrder);
+            query = ApplySorting(query  , sortBy, sortOrder);
 
             var berthings = await query
                 .Skip((page - 1) * pageSize)

@@ -46,7 +46,11 @@ namespace WebSafeDockingAPI.Models
         [StringLength(20)]
         [Column("side")]
         public string? Side { get; set; }
-
+        
+        [Column("arrivalAt")]
+        public DateTime? ArrivalAt { get; set; }
+        [Column("departureAt")]
+        public DateTime? DepartureAt { get; set; }
         // Navigation properties
         [ForeignKey("ShipID")]
         public Ship? Ship { get; set; }
@@ -56,5 +60,6 @@ namespace WebSafeDockingAPI.Models
 
         [ForeignKey("AgencyID")]
         public ShippingAgency? ShippingAgency { get; set; }
+
     }
 }

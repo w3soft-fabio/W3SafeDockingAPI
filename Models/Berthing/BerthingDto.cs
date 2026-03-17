@@ -32,6 +32,10 @@ namespace WebSafeDockingAPI.Models
         [StringLength(20, ErrorMessage = "O campo Side deve ter no máximo 20 caracteres.")]
         public string? Side { get; set; }
 
+        public DateTime? ArrivalAt { get; set; }
+
+        public DateTime? DepartureAt { get; set; }
+
         public Berthing ToEntity()
         {
             return new Berthing
@@ -46,7 +50,9 @@ namespace WebSafeDockingAPI.Models
                 DepartureDraftFore = this.DepartureDraftFore,
                 DepartureDraftAft = this.DepartureDraftAft,
                 UnberthingDate = this.UnberthingDate,
-                Side = this.Side
+                Side = this.Side,
+                ArrivalAt = this.ArrivalAt,
+                DepartureAt = this.DepartureAt
             };
         }
     }
@@ -71,6 +77,8 @@ namespace WebSafeDockingAPI.Models
         public decimal? DepartureDraftAft { get; set; }
         public DateOnly? UnberthingDate { get; set; }
         public string? Side { get; set; }
+        public DateTime? ArrivalAt { get; set; }
+        public DateTime? DepartureAt { get; set; }
 
         public static BerthingResponseDTO FromBerthing(Berthing berthing)
         {
@@ -90,7 +98,9 @@ namespace WebSafeDockingAPI.Models
                 DepartureDraftFore = berthing.DepartureDraftFore,
                 DepartureDraftAft = berthing.DepartureDraftAft,
                 UnberthingDate = berthing.UnberthingDate,
-                Side = berthing.Side
+                Side = berthing.Side,
+                ArrivalAt = berthing.ArrivalAt,
+                DepartureAt = berthing.DepartureAt
             };
         }
     }

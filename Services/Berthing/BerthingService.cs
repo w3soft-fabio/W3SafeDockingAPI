@@ -57,6 +57,8 @@ namespace WebSafeDockingAPI.Services
             berthingExistente.DepartureDraftAft = dto.DepartureDraftAft;
             berthingExistente.UnberthingDate = dto.UnberthingDate;
             berthingExistente.Side = dto.Side;
+            berthingExistente.ArrivalAt = dto.ArrivalAt ?? berthingExistente.ArrivalAt;
+            berthingExistente.DepartureAt = dto.DepartureAt ?? berthingExistente.DepartureAt;
 
             var atualizado = await _repository.UpdateAsync(berthingExistente);
             if (!atualizado) return null;
