@@ -7,9 +7,8 @@ namespace WebSafeDockingAPI.Models
     public class Ship
     {
         [Key]
-
-        [Column("id")]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        [Column("id")]
         public int Id { get; set; }
 
         [Required]

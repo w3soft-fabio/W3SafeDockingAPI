@@ -20,7 +20,7 @@ namespace WebSafeDockingAPI.Models
 
         public int? Dwt { get; set; }
 
-        public int? AlarmID { get; set; }
+        public int AlarmID { get; set; } = 1; // Valor padrão para AlarmID
 
         /// <summary>
         /// Converte o DTO para a entidade Ship.

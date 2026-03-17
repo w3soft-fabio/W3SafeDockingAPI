@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using WebSafeDockingAPI.Data;
+using WebSafeDockingAPI.Filters;
 using WebSafeDockingAPI.Models;
 using WebSafeDockingAPI.Repositories;
 using WebSafeDockingAPI.Services;
@@ -39,6 +40,22 @@ builder.Services.AddScoped<AlarmThresholdService>();
 builder.Services.AddScoped<IUsuarioRepository, UsuarioRepository>();
 builder.Services.AddScoped<UsuarioService>();
 
+// ---- Repository e Service para BerthSnapshot ----
+builder.Services.AddScoped<IBerthSnapshotRepository, BerthSnapshotRepository>();
+builder.Services.AddScoped<BerthSnapshotService>();
+
+// ---- Repository e Service para MooringCompany ----
+builder.Services.AddScoped<IMooringCompanyRepository, MooringCompanyRepository>();
+builder.Services.AddScoped<MooringCompanyService>();
+
+// ---- Repository e Service para ShippingAgency ----
+builder.Services.AddScoped<IShippingAgencyRepository, ShippingAgencyRepository>();
+builder.Services.AddScoped<ShippingAgencyService>();
+
+// ---- Repository e Service para Berthing ----
+builder.Services.AddScoped<IBerthingRepository, BerthingRepository>();
+builder.Services.AddScoped<BerthingService>();
+
 // ---- Repository e Service para Autenticação (JWT) ----
 builder.Services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
 builder.Services.AddScoped<PasswordHasherService>();
@@ -54,6 +71,9 @@ builder.Services.Configure<ModbusSettings>(
 // Usando FakeModbusConnectionService para simulação (sem sensor real)
 builder.Services.AddSingleton<IModbusConnectionService, FakeModbusConnectionService>();
 builder.Services.AddSingleton<IModbusReaderService, ModbusReaderService>();
+
+// Registra o notificador de snapshots (pub/sub para SSE)
+builder.Services.AddSingleton<SnapshotNotifierService>();
 
 // Registra o serviço de polling que lê dados a cada segundo
 builder.Services.AddHostedService<ModbusPollingService>();
@@ -97,7 +117,10 @@ builder.Services.AddAuthentication(options =>
 builder.Services.AddAuthorization();
 
 // ---- Configuração da API ----
-builder.Services.AddControllers();
+builder.Services.AddControllers(options =>
+{
+    options.Filters.Add<GlobalExceptionFilter>();
+});
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {

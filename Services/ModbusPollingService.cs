@@ -24,6 +24,8 @@ public class ModbusPollingService : BackgroundService
     private readonly IModbusReaderService _reader;
     private readonly ILogger<ModbusPollingService> _logger;
     private readonly ModbusSettings _settings;
+    private readonly IServiceScopeFactory _scopeFactory;
+    private readonly SnapshotNotifierService _notifier;
 
     // Para detectar perda de comunicação
     private int _lastLifeCounter = -1;
@@ -32,11 +34,15 @@ public class ModbusPollingService : BackgroundService
     public ModbusPollingService(
         IModbusReaderService reader,
         IOptions<ModbusSettings> settings,
-        ILogger<ModbusPollingService> logger)
+        ILogger<ModbusPollingService> logger,
+        IServiceScopeFactory scopeFactory,
+        SnapshotNotifierService notifier)
     {
         _reader = reader;
         _settings = settings.Value;
         _logger = logger;
+        _scopeFactory = scopeFactory;
+        _notifier = notifier;
     }
 
     /// <summary>
@@ -62,6 +68,12 @@ public class ModbusPollingService : BackgroundService
 
                 // Atualiza o dado em memória (que a API vai retornar)
                 BerthingController.UpdateSnapshot(snapshot);
+
+                // Notifica todos os clientes SSE conectados
+                _notifier.Notify(snapshot);
+
+                // Persiste o snapshot no banco de dados
+                await SalvarSnapshotAsync(snapshot);
             }
             catch (Exception ex)
             {
@@ -110,5 +122,22 @@ public class ModbusPollingService : BackgroundService
         }
 
         _lastLifeCounter = snapshot.LifeCounter;
+    }
+
+    /// <summary>
+    /// Persiste o snapshot no banco usando um escopo de DI (scoped service dentro de singleton).
+    /// </summary>
+    private async Task SalvarSnapshotAsync(ModbusSnapshot snapshot)
+    {
+        try
+        {
+            using var scope = _scopeFactory.CreateScope();
+            var service = scope.ServiceProvider.GetRequiredService<BerthSnapshotService>();
+            await service.SaveSnapshotAsync(snapshot);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Falha ao salvar snapshot no banco de dados.");
+        }
     }
 }

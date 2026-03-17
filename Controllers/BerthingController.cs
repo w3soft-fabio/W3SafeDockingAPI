@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using WebSafeDockingAPI.Models;
@@ -15,6 +16,7 @@ public class BerthingController : ControllerBase
 {
     private readonly IModbusReaderService _reader;
     private readonly ILogger<BerthingController> _logger;
+    private readonly SnapshotNotifierService _notifier;
 
     // Armazena o último snapshot lido (atualizado pelo Background Service)
     private static ModbusSnapshot? _lastSnapshot;
@@ -24,10 +26,12 @@ public class BerthingController : ControllerBase
 
     public BerthingController(
         IModbusReaderService reader,
-        ILogger<BerthingController> logger)
+        ILogger<BerthingController> logger,
+        SnapshotNotifierService notifier)
     {
         _reader = reader;
         _logger = logger;
+        _notifier = notifier;
     }
 
     /// <summary>
@@ -97,6 +101,41 @@ public class BerthingController : ControllerBase
                 UltimaLeitura = _lastSnapshot.DataHoraLeitura,
                 LifeCounter = _lastSnapshot.LifeCounter,
             });
+        }
+    }
+
+    /// <summary>
+    /// GET /api/berthing/stream
+    /// Endpoint SSE (Server-Sent Events) que envia snapshots em tempo real.
+    /// O Flutter consome via stream — a conexão fica aberta e cada novo
+    /// snapshot é enviado automaticamente quando disponível.
+    /// </summary>
+    [HttpGet("stream")]
+    public async Task StreamSnapshot(CancellationToken cancellationToken)
+    {
+        Response.ContentType = "text/event-stream";
+        Response.Headers.CacheControl = "no-cache";
+        Response.Headers.Connection = "keep-alive";
+
+        // Desabilita o buffering de resposta para que cada write chegue ao cliente imediatamente
+        HttpContext.Features.Get<Microsoft.AspNetCore.Http.Features.IHttpResponseBodyFeature>()
+            ?.DisableBuffering();
+
+        // Faz flush dos headers para que o cliente saiba que a conexão SSE foi estabelecida
+        await Response.Body.FlushAsync(cancellationToken);
+
+        try
+        {
+            await foreach (var snapshot in _notifier.SubscribeAsync(cancellationToken))
+            {
+                var json = JsonSerializer.Serialize(snapshot);
+                await Response.WriteAsync($"data: {json}\n\n", cancellationToken);
+                await Response.Body.FlushAsync(cancellationToken);
+            }
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            // Client disconnected — normal SSE lifecycle, not an error.
         }
     }
 
