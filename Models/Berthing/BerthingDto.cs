@@ -27,8 +27,6 @@ namespace WebSafeDockingAPI.Models
 
         public decimal? DepartureDraftAft { get; set; }
 
-        public DateOnly? UnberthingDate { get; set; }
-
         [StringLength(20, ErrorMessage = "O campo Side deve ter no máximo 20 caracteres.")]
         public string? Side { get; set; }
 
@@ -49,7 +47,6 @@ namespace WebSafeDockingAPI.Models
                 ArrivalDraftAft = this.ArrivalDraftAft,
                 DepartureDraftFore = this.DepartureDraftFore,
                 DepartureDraftAft = this.DepartureDraftAft,
-                UnberthingDate = this.UnberthingDate,
                 Side = this.Side,
                 ArrivalAt = this.ArrivalAt,
                 DepartureAt = this.DepartureAt
@@ -75,7 +72,6 @@ namespace WebSafeDockingAPI.Models
         public decimal? ArrivalDraftAft { get; set; }
         public decimal? DepartureDraftFore { get; set; }
         public decimal? DepartureDraftAft { get; set; }
-        public DateOnly? UnberthingDate { get; set; }
         public string? Side { get; set; }
         public DateTime? ArrivalAt { get; set; }
         public DateTime? DepartureAt { get; set; }
@@ -97,7 +93,6 @@ namespace WebSafeDockingAPI.Models
                 ArrivalDraftAft = berthing.ArrivalDraftAft,
                 DepartureDraftFore = berthing.DepartureDraftFore,
                 DepartureDraftAft = berthing.DepartureDraftAft,
-                UnberthingDate = berthing.UnberthingDate,
                 Side = berthing.Side,
                 ArrivalAt = berthing.ArrivalAt,
                 DepartureAt = berthing.DepartureAt
