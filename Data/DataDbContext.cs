@@ -13,6 +13,10 @@ namespace WebSafeDockingAPI.Data
         public DbSet<MooringPattern> MooringPatterns { get; set; }
         public DbSet<AlarmThreshold> AlarmThresholds { get; set; }
         public DbSet<Usuario> Usuarios { get; set; }
+        public DbSet<Grupo> Grupos { get; set; }
+        public DbSet<Recurso> Recursos { get; set; }
+        public DbSet<GrupoRecurso> GrupoRecursos { get; set; }
+        public DbSet<GrupoUsuario> GrupoUsuarios { get; set; }
         public DbSet<RefreshToken> RefreshTokens { get; set; }
         public DbSet<BerthSnapshot> BerthSnapshots { get; set; }
 
