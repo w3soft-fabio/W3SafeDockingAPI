@@ -27,22 +27,20 @@ namespace WebSafeDockingAPI.Models
 
         [Column("agencyID")]
         public int? AgencyID { get; set; }
-
+        // Calado de chegada da proa
         [Column("arrivalDraftFore")]
         public decimal? ArrivalDraftFore { get; set; }
-
+        // Calado de chegada da popa
         [Column("arrivalDraftAft")]
         public decimal? ArrivalDraftAft { get; set; }
-
+        // Calado de saída da proa
         [Column("departureDraftFore")]
         public decimal? DepartureDraftFore { get; set; }
-
+        // Calado de saída da popa    
         [Column("departureDraftAft")]
         public decimal? DepartureDraftAft { get; set; }
-
-        [Column("unberthingDate")]
-        public DateOnly? UnberthingDate { get; set; }
-
+ 
+        //Borda de atracação (ex: "bombordo", "estibordo", "centro")
         [StringLength(20)]
         [Column("side")]
         public string? Side { get; set; }

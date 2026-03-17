@@ -48,14 +48,13 @@ namespace WebSafeDockingAPI.Services
 
             berthingExistente.Berth = dto.Berth;
             berthingExistente.Schedule = dto.Schedule;
-            berthingExistente.ShipID = dto.ShipID;
-            berthingExistente.MooringCompanyID = dto.MooringCompanyID;
-            berthingExistente.AgencyID = dto.AgencyID;
+            berthingExistente.ShipID = dto.Ship.Id;
+            berthingExistente.MooringCompanyID = dto.MooringCompany?.MooringCompanyID;
+            berthingExistente.AgencyID = dto.ShippingAgency?.AgencyID;
             berthingExistente.ArrivalDraftFore = dto.ArrivalDraftFore;
             berthingExistente.ArrivalDraftAft = dto.ArrivalDraftAft;
             berthingExistente.DepartureDraftFore = dto.DepartureDraftFore;
             berthingExistente.DepartureDraftAft = dto.DepartureDraftAft;
-            berthingExistente.UnberthingDate = dto.UnberthingDate;
             berthingExistente.Side = dto.Side;
             berthingExistente.ArrivalAt = dto.ArrivalAt ?? berthingExistente.ArrivalAt;
             berthingExistente.DepartureAt = dto.DepartureAt ?? berthingExistente.DepartureAt;
@@ -85,22 +84,22 @@ namespace WebSafeDockingAPI.Services
 
         private async Task ValidarChavesEstrangeirasAsync(BerthingCreateUpdateDTO dto)
         {
-            var ship = await _shipRepository.GetByIdAsync(dto.ShipID);
+            var ship = await _shipRepository.GetByIdAsync(dto.Ship.Id);
             if (ship == null)
-                throw new KeyNotFoundException($"Navio com ID {dto.ShipID} não encontrado.");
+                throw new KeyNotFoundException($"Navio com ID {dto.Ship.Id} não encontrado.");
 
-            if (dto.MooringCompanyID.HasValue)
+            if (dto.MooringCompany != null)
             {
-                var mooringCompany = await _mooringCompanyRepository.GetByIdAsync(dto.MooringCompanyID.Value);
+                var mooringCompany = await _mooringCompanyRepository.GetByIdAsync(dto.MooringCompany.MooringCompanyID);
                 if (mooringCompany == null)
-                    throw new KeyNotFoundException($"Empresa de amarração com ID {dto.MooringCompanyID.Value} não encontrada.");
+                    throw new KeyNotFoundException($"Empresa de amarração com ID {dto.MooringCompany.MooringCompanyID} não encontrada.");
             }
 
-            if (dto.AgencyID.HasValue)
+            if (dto.ShippingAgency != null)
             {
-                var agency = await _shippingAgencyRepository.GetByIdAsync(dto.AgencyID.Value);
+                var agency = await _shippingAgencyRepository.GetByIdAsync(dto.ShippingAgency.AgencyID);
                 if (agency == null)
-                    throw new KeyNotFoundException($"Agência marítima com ID {dto.AgencyID.Value} não encontrada.");
+                    throw new KeyNotFoundException($"Agência marítima com ID {dto.ShippingAgency.AgencyID} não encontrada.");
             }
         }
     }

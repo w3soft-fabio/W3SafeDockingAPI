@@ -100,7 +100,7 @@ namespace WebSafeDockingAPI.Repositories
                 "id" or "berthingid"       => isDescending ? query.OrderByDescending(b => b.BerthingID) : query.OrderBy(b => b.BerthingID),
                 "berth"                    => isDescending ? query.OrderByDescending(b => b.Berth) : query.OrderBy(b => b.Berth),
                 "ship" or "shipname"       => isDescending ? query.OrderByDescending(b => b.Ship!.Name) : query.OrderBy(b => b.Ship!.Name),
-                "unberthingdate"           => isDescending ? query.OrderByDescending(b => b.UnberthingDate) : query.OrderBy(b => b.UnberthingDate),
+                "departureat"              => isDescending ? query.OrderByDescending(b => b.DepartureAt) : query.OrderBy(b => b.DepartureAt),
                 "side"                     => isDescending ? query.OrderByDescending(b => b.Side) : query.OrderBy(b => b.Side),
                 _                          => query.OrderBy(b => b.BerthingID)
             };

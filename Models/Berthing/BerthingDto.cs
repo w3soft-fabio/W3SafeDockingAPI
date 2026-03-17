@@ -12,12 +12,12 @@ namespace WebSafeDockingAPI.Models
 
         public int? Schedule { get; set; }
 
-        [Required(ErrorMessage = "O campo ShipID é obrigatório.")]
-        public int ShipID { get; set; }
+        [Required(ErrorMessage = "O campo Ship é obrigatório.")]
+        public Ship Ship { get; set; } = null!;
 
-        public int? MooringCompanyID { get; set; }
+        public MooringCompany? MooringCompany { get; set; }
 
-        public int? AgencyID { get; set; }
+        public ShippingAgency? ShippingAgency { get; set; }
 
         public decimal? ArrivalDraftFore { get; set; }
 
@@ -26,8 +26,6 @@ namespace WebSafeDockingAPI.Models
         public decimal? DepartureDraftFore { get; set; }
 
         public decimal? DepartureDraftAft { get; set; }
-
-        public DateOnly? UnberthingDate { get; set; }
 
         [StringLength(20, ErrorMessage = "O campo Side deve ter no máximo 20 caracteres.")]
         public string? Side { get; set; }
@@ -42,14 +40,13 @@ namespace WebSafeDockingAPI.Models
             {
                 Berth = this.Berth,
                 Schedule = this.Schedule,
-                ShipID = this.ShipID,
-                MooringCompanyID = this.MooringCompanyID,
-                AgencyID = this.AgencyID,
+                ShipID = this.Ship.Id,
+                MooringCompanyID = this.MooringCompany?.MooringCompanyID,
+                AgencyID = this.ShippingAgency?.AgencyID,
                 ArrivalDraftFore = this.ArrivalDraftFore,
                 ArrivalDraftAft = this.ArrivalDraftAft,
                 DepartureDraftFore = this.DepartureDraftFore,
                 DepartureDraftAft = this.DepartureDraftAft,
-                UnberthingDate = this.UnberthingDate,
                 Side = this.Side,
                 ArrivalAt = this.ArrivalAt,
                 DepartureAt = this.DepartureAt
@@ -65,17 +62,13 @@ namespace WebSafeDockingAPI.Models
         public int BerthingID { get; set; }
         public int Berth { get; set; }
         public int? Schedule { get; set; }
-        public int ShipID { get; set; }
-        public string? ShipName { get; set; }
-        public int? MooringCompanyID { get; set; }
-        public string? MooringCompanyName { get; set; }
-        public int? AgencyID { get; set; }
-        public string? AgencyName { get; set; }
+        public Ship Ship { get; set; } = null!;
+        public MooringCompany? MooringCompany { get; set; }
+        public ShippingAgency? ShippingAgency { get; set; }
         public decimal? ArrivalDraftFore { get; set; }
         public decimal? ArrivalDraftAft { get; set; }
         public decimal? DepartureDraftFore { get; set; }
         public decimal? DepartureDraftAft { get; set; }
-        public DateOnly? UnberthingDate { get; set; }
         public string? Side { get; set; }
         public DateTime? ArrivalAt { get; set; }
         public DateTime? DepartureAt { get; set; }
@@ -87,17 +80,13 @@ namespace WebSafeDockingAPI.Models
                 BerthingID = berthing.BerthingID,
                 Berth = berthing.Berth,
                 Schedule = berthing.Schedule,
-                ShipID = berthing.ShipID,
-                ShipName = berthing.Ship?.Name,
-                MooringCompanyID = berthing.MooringCompanyID,
-                MooringCompanyName = berthing.MooringCompany?.Name,
-                AgencyID = berthing.AgencyID,
-                AgencyName = berthing.ShippingAgency?.Name,
+                Ship = berthing.Ship!,
+                MooringCompany = berthing.MooringCompany,
+                ShippingAgency = berthing.ShippingAgency,
                 ArrivalDraftFore = berthing.ArrivalDraftFore,
                 ArrivalDraftAft = berthing.ArrivalDraftAft,
                 DepartureDraftFore = berthing.DepartureDraftFore,
                 DepartureDraftAft = berthing.DepartureDraftAft,
-                UnberthingDate = berthing.UnberthingDate,
                 Side = berthing.Side,
                 ArrivalAt = berthing.ArrivalAt,
                 DepartureAt = berthing.DepartureAt
