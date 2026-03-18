@@ -18,6 +18,18 @@ namespace WebSafeDockingAPI.Repositories
             return await _context.GrupoRecursos.FindAsync(grupoId, recursoChave);
         }
 
+        public async Task<bool> UsuarioTemRecursoAsync(int usuarioId, string recursoChave)
+        {
+            return await _context.GrupoUsuarios
+                .Where(gu => gu.UsuarioId == usuarioId)
+                .Join(
+                    _context.GrupoRecursos.Where(gr => gr.RecursoChave == recursoChave),
+                    gu => gu.GrupoId,
+                    gr => gr.GrupoId,
+                    (_, _) => 1)
+                .AnyAsync();
+        }
+
         public async Task<GrupoRecurso> CreateAsync(GrupoRecurso grupoRecurso)
         {
             _context.GrupoRecursos.Add(grupoRecurso);

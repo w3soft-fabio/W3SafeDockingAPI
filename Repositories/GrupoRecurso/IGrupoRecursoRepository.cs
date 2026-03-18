@@ -5,6 +5,7 @@ namespace WebSafeDockingAPI.Repositories
     public interface IGrupoRecursoRepository
     {
         Task<GrupoRecurso?> GetByIdAsync(int grupoId, string recursoChave);
+        Task<bool> UsuarioTemRecursoAsync(int usuarioId, string recursoChave);
         Task<GrupoRecurso> CreateAsync(GrupoRecurso grupoRecurso);
         Task<bool> UpdateAsync(GrupoRecurso grupoRecurso);
         Task<bool> DeleteAsync(int grupoId, string recursoChave);

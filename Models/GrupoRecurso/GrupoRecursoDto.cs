@@ -48,4 +48,14 @@ namespace WebSafeDockingAPI.Models
             };
         }
     }
+
+    /// <summary>
+    /// DTO para RESPONSE da rota de checagem de acesso a recurso.
+    /// </summary>
+    public class ChecarRecursoVinculadoResponseDTO
+    {
+        public int UsuarioId { get; set; }
+        public string RecursoChave { get; set; } = string.Empty;
+        public bool PossuiAcesso { get; set; }
+    }
 }

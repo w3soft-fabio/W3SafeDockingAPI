@@ -7,9 +7,6 @@ namespace WebSafeDockingAPI.Models
     /// </summary>
     public class UsuarioCreateUpdateDTO
     {
-        [Required(ErrorMessage = "O ID do usuário é obrigatório.")]
-        public int Id { get; set; }
-
         [StringLength(100, ErrorMessage = "O nome deve ter no máximo 100 caracteres.")]
         public string? Nome { get; set; }
 
@@ -41,7 +38,6 @@ namespace WebSafeDockingAPI.Models
         {
             return new Usuario
             {
-                Id = this.Id,
                 Nome = this.Nome,
                 Cpf = this.Cpf,
                 NivelAcesso = this.NivelAcesso,

@@ -29,6 +29,15 @@ namespace WebSafeDockingAPI.Services
         }
 
         /// <summary>
+        /// Verifica se um usuario possui acesso ao recurso atraves de vinculos de grupo.
+        /// </summary>
+        public async Task<bool> ChecarRecursoVinculadoAsync(int usuarioId, string recursoChave)
+        {
+            var recursoChaveNormalizada = NormalizarRecursoChave(recursoChave);
+            return await _repository.UsuarioTemRecursoAsync(usuarioId, recursoChaveNormalizada);
+        }
+
+        /// <summary>
         /// Cria um novo vinculo grupo-recurso.
         /// </summary>
         public async Task<GrupoRecursoResponseDTO> CriarGrupoRecursoAsync(GrupoRecursoCreateUpdateDTO dto)

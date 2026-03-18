@@ -68,6 +68,37 @@ namespace WebSafeDockingAPI.Controllers
         }
 
         /// <summary>
+        /// GET: api/gruposRecursos/checarRecursoVinculado/{usuarioId}/{recursoChave}
+        /// Verifica se um usuario possui acesso ao recurso atraves dos grupos vinculados.
+        /// </summary>
+        [HttpGet("checarRecursoVinculado/{usuarioId:int}/{recursoChave}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<ActionResult<ChecarRecursoVinculadoResponseDTO>> ChecarRecursoVinculado(
+            int usuarioId,
+            string recursoChave)
+        {
+            if (usuarioId <= 0 || string.IsNullOrWhiteSpace(recursoChave))
+            {
+                return BadRequest(new ProblemDetails
+                {
+                    Title = "Parametros invalidos",
+                    Detail = "usuarioId deve ser positivo e recursoChave deve ser informada.",
+                    Status = StatusCodes.Status400BadRequest
+                });
+            }
+
+            var possuiAcesso = await _service.ChecarRecursoVinculadoAsync(usuarioId, recursoChave);
+
+            return Ok(new ChecarRecursoVinculadoResponseDTO
+            {
+                UsuarioId = usuarioId,
+                RecursoChave = recursoChave.Trim(),
+                PossuiAcesso = possuiAcesso
+            });
+        }
+
+        /// <summary>
         /// POST: api/gruposRecursos/setGrupoRecurso
         /// Cria um novo vinculo grupo-recurso.
         /// </summary>

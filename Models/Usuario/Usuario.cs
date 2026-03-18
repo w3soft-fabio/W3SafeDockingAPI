@@ -7,7 +7,7 @@ namespace WebSafeDockingAPI.Models
     public class Usuario
     {
         [Key]
-        [DatabaseGenerated(DatabaseGeneratedOption.None)]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         [Column("id")]
         public int Id { get; set; }
 
