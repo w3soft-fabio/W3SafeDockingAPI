@@ -151,12 +151,13 @@ builder.Services.AddSwaggerGen(options =>
     });
 }); // Documentação automática da API
 
-// ---- CORS (permite Flutter e qualquer frontend acessar a API) ----
+// ---- CORS (origens permitidas definidas em appsettings.json > AllowedOrigins) ----
+var allowedOrigins = builder.Configuration.GetSection("AllowedOrigins").Get<string[]>() ?? [];
 builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy =>
     {
-        policy.AllowAnyOrigin()
+        policy.WithOrigins(allowedOrigins)
               .AllowAnyMethod()
               .AllowAnyHeader();
     });
