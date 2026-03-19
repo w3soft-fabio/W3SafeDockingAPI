@@ -72,6 +72,10 @@ builder.Services.AddScoped<ShippingAgencyService>();
 builder.Services.AddScoped<IBerthingRepository, BerthingRepository>();
 builder.Services.AddScoped<BerthingService>();
 
+// ---- Repository e Service para EmailConta ----
+builder.Services.AddScoped<IEmailContaRepository, EmailContaRepository>();
+builder.Services.AddScoped<EmailContaService>();
+
 // ---- Repository e Service para Autenticação (JWT) ----
 builder.Services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
 builder.Services.AddScoped<PasswordHasherService>();
