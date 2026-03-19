@@ -32,3 +32,6 @@ Thumbs.db
 # Logs
 logs/
 *.log
+
+# Temporary PDFs
+wwwroot/reports/*.pdf
