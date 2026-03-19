@@ -143,5 +143,48 @@ namespace WebSafeDockingAPI.Controllers
                 mensagem = "Link de primeiro acesso reenviado com sucesso."
             });
         }
+
+        /// <summary>
+        /// POST: api/auth/esqueci-senha
+        /// Solicita envio de link de recuperacao via CPF.
+        /// Retorna sempre mensagem generica para nao expor existencia de conta.
+        /// </summary>
+        [HttpPost("esqueci-senha")]
+        [AllowAnonymous]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public async Task<IActionResult> EsqueciSenha([FromBody] EsqueciSenhaRequest request)
+        {
+            await _authService.EsqueciSenhaAsync(request.Cpf);
+
+            return Ok(new
+            {
+                mensagem = "Se os dados estiverem corretos, enviaremos um link para redefinicao de senha."
+            });
+        }
+
+        /// <summary>
+        /// POST: api/auth/redefinir-senha
+        /// Redefine a senha usando token de recuperacao.
+        /// </summary>
+        [HttpPost("redefinir-senha")]
+        [AllowAnonymous]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> RedefinirSenha([FromBody] RedefinirSenhaRequest request)
+        {
+            var sucesso = await _authService.RedefinirSenhaAsync(request);
+            if (!sucesso)
+            {
+                return BadRequest(new
+                {
+                    erro = "Token de recuperacao invalido, expirado ou ja utilizado."
+                });
+            }
+
+            return Ok(new
+            {
+                mensagem = "Senha redefinida com sucesso."
+            });
+        }
     }
 }

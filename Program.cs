@@ -79,6 +79,7 @@ builder.Services.AddScoped<EmailContaService>();
 // ---- Repository e Service para Autenticação (JWT) ----
 builder.Services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
 builder.Services.AddScoped<IPrimeiroAcessoTokenRepository, PrimeiroAcessoTokenRepository>();
+builder.Services.AddScoped<IRecuperacaoSenhaTokenRepository, RecuperacaoSenhaTokenRepository>();
 builder.Services.AddScoped<PasswordHasherService>();
 builder.Services.AddScoped<AuthService>();
 

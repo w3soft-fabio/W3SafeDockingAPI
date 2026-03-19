@@ -84,4 +84,27 @@ namespace WebSafeDockingAPI.Models
         [StringLength(14, ErrorMessage = "O CPF deve ter no maximo 14 caracteres.")]
         public string Cpf { get; set; } = string.Empty;
     }
+
+    /// <summary>
+    /// DTO para solicitar recuperacao de senha via CPF.
+    /// </summary>
+    public class EsqueciSenhaRequest
+    {
+        [Required(ErrorMessage = "O CPF e obrigatorio.")]
+        [StringLength(14, ErrorMessage = "O CPF deve ter no maximo 14 caracteres.")]
+        public string Cpf { get; set; } = string.Empty;
+    }
+
+    /// <summary>
+    /// DTO para redefinir senha com token de recuperacao.
+    /// </summary>
+    public class RedefinirSenhaRequest
+    {
+        [Required(ErrorMessage = "O token e obrigatorio.")]
+        public string Token { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "A nova senha e obrigatoria.")]
+        [MinLength(8, ErrorMessage = "A nova senha deve ter no minimo 8 caracteres.")]
+        public string NovaSenha { get; set; } = string.Empty;
+    }
 }

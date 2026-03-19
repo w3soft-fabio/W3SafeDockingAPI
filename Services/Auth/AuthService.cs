@@ -16,11 +16,13 @@ namespace WebSafeDockingAPI.Services
     /// - login (CPF + senha)
     /// - emissao e rotacao de access/refresh tokens
     /// - fluxo de primeiro acesso (link por e-mail + definicao de senha)
+    /// - fluxo de recuperacao de senha (esqueci a senha)
     /// </summary>
     public class AuthService
     {
         private readonly IRefreshTokenRepository _refreshTokenRepository;
         private readonly IPrimeiroAcessoTokenRepository _primeiroAcessoTokenRepository;
+        private readonly IRecuperacaoSenhaTokenRepository _recuperacaoSenhaTokenRepository;
         private readonly IEmailContaRepository _emailContaRepository;
         private readonly IUsuarioRepository _usuarioRepository;
         private readonly PasswordHasherService _passwordHasher;
@@ -30,6 +32,7 @@ namespace WebSafeDockingAPI.Services
         public AuthService(
             IRefreshTokenRepository refreshTokenRepository,
             IPrimeiroAcessoTokenRepository primeiroAcessoTokenRepository,
+            IRecuperacaoSenhaTokenRepository recuperacaoSenhaTokenRepository,
             IEmailContaRepository emailContaRepository,
             IUsuarioRepository usuarioRepository,
             PasswordHasherService passwordHasher,
@@ -38,6 +41,7 @@ namespace WebSafeDockingAPI.Services
         {
             _refreshTokenRepository = refreshTokenRepository;
             _primeiroAcessoTokenRepository = primeiroAcessoTokenRepository;
+            _recuperacaoSenhaTokenRepository = recuperacaoSenhaTokenRepository;
             _emailContaRepository = emailContaRepository;
             _usuarioRepository = usuarioRepository;
             _passwordHasher = passwordHasher;
@@ -181,7 +185,7 @@ namespace WebSafeDockingAPI.Services
 
             // Monta link e corpo do e-mail
             var link = BuildPrimeiroAcessoLink(token);
-            var assunto = "Conta criada com sucesso - Defina sua senha";
+            var assunto = "Primeiro acesso - Defina sua senha no W3 SafeDocking";
             var corpoHtml = BuildPrimeiroAcessoEmailBody(usuario, link, expiraEm);
 
             // Envia e-mail para o usuario
@@ -241,6 +245,118 @@ namespace WebSafeDockingAPI.Services
             token.UsadoEm = DateTime.UtcNow;
             token.Revogado = true;
             await _primeiroAcessoTokenRepository.MarcarComoUsadoAsync(token);
+
+            return true;
+        }
+
+        // =====================================================
+        //  ESQUECI SENHA - Envio de link de recuperacao por CPF
+        // =====================================================
+
+        /// <summary>
+        /// Solicita recuperacao de senha usando apenas CPF.
+        /// A resposta HTTP externa deve permanecer generica para nao expor existencia de usuario.
+        /// </summary>
+        public async Task EsqueciSenhaAsync(string cpf)
+        {
+            if (string.IsNullOrWhiteSpace(cpf))
+                return;
+
+            // Busca usuario pelo CPF informado
+            var usuario = await _refreshTokenRepository.BuscarUsuarioPorCpfAsync(cpf);
+            if (usuario == null)
+            {
+                _logger.LogInformation("Esqueci senha solicitado para CPF nao encontrado.");
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(usuario.Email))
+            {
+                _logger.LogWarning("Esqueci senha nao enviado para usuario {UsuarioId}: email ausente.", usuario.Id);
+                return;
+            }
+
+            // Seleciona conta SMTP padrao
+            var contaEmail = await _emailContaRepository.GetDefaultAsync();
+            if (contaEmail == null)
+            {
+                _logger.LogWarning("Esqueci senha nao enviado para usuario {UsuarioId}: nenhuma conta SMTP cadastrada.", usuario.Id);
+                return;
+            }
+
+            var fromAddress = !string.IsNullOrWhiteSpace(contaEmail.Endereco)
+                ? contaEmail.Endereco!
+                : contaEmail.CredenciaisUsuario;
+
+            if (string.IsNullOrWhiteSpace(fromAddress) || string.IsNullOrWhiteSpace(contaEmail.SmtpHost))
+            {
+                _logger.LogWarning("Esqueci senha nao enviado para usuario {UsuarioId}: configuracao SMTP incompleta.", usuario.Id);
+                return;
+            }
+
+            // Mantem somente um token ativo por usuario
+            await _recuperacaoSenhaTokenRepository.InvalidarTokensAtivosAsync(usuario.Id);
+
+            // Gera token de recuperacao (texto para link + hash para banco)
+            var (token, tokenHash) = GerarTokenRecuperacaoSenha();
+            var expiraEm = DateTime.UtcNow.AddMinutes(GetRecuperacaoSenhaExpiracaoMinutos());
+
+            await _recuperacaoSenhaTokenRepository.CriarAsync(new RecuperacaoSenhaToken
+            {
+                UsuarioId = usuario.Id,
+                TokenHash = tokenHash,
+                CriadoEm = DateTime.UtcNow,
+                ExpiraEm = expiraEm,
+                Revogado = false
+            });
+
+            var link = BuildRecuperacaoSenhaLink(token);
+            var assunto = "Recuperação de senha - W3 SafeDocking";
+            var corpoHtml = BuildRecuperacaoSenhaEmailBody(usuario, link, expiraEm);
+
+            await EnviarEmailAsync(
+                contaEmail,
+                fromAddress,
+                usuario.Email!,
+                assunto,
+                corpoHtml);
+        }
+
+        /// <summary>
+        /// Redefine a senha via token de recuperacao.
+        /// </summary>
+        public async Task<bool> RedefinirSenhaAsync(RedefinirSenhaRequest request)
+        {
+            // 1) Busca token por hash
+            var tokenHash = HashToken(request.Token);
+            var token = await _recuperacaoSenhaTokenRepository.BuscarPorHashAsync(tokenHash);
+
+            // 2) Valida token
+            if (token == null || !token.Ativo)
+                return false;
+
+            // 3) Recupera usuario do token
+            var usuario = token.Usuario
+                ?? await _refreshTokenRepository.BuscarUsuarioPorIdAsync(token.UsuarioId);
+
+            if (usuario == null)
+                return false;
+
+            // 4) Atualiza senha e garante usuario ativo
+            usuario.SenhaHash = _passwordHasher.HashPassword(request.NovaSenha);
+            usuario.Ativo = true;
+
+            var atualizado = await _usuarioRepository.UpdateAsync(usuario);
+            if (!atualizado)
+                return false;
+
+            // 5) Consome token de recuperacao
+            token.UsadoEm = DateTime.UtcNow;
+            token.Revogado = true;
+            await _recuperacaoSenhaTokenRepository.MarcarComoUsadoAsync(token);
+
+            // 6) Revoga sessoes ativas (refresh tokens) para forcar novo login
+            await _refreshTokenRepository.RevogarTodosPorUsuarioAsync(usuario.Id);
 
             return true;
         }
@@ -358,6 +474,14 @@ namespace WebSafeDockingAPI.Services
         }
 
         /// <summary>
+        /// Gera token de recuperacao de senha e seu hash correspondente.
+        /// </summary>
+        private static (string token, string tokenHash) GerarTokenRecuperacaoSenha()
+        {
+            return GerarTokenPrimeiroAcesso();
+        }
+
+        /// <summary>
         /// Aplica SHA-256 ao token (armazenamento seguro no banco).
         /// </summary>
         private static string HashToken(string token)
@@ -373,6 +497,15 @@ namespace WebSafeDockingAPI.Services
         {
             var configValue = _configuration["FirstAccess:TokenExpirationMinutes"];
             return int.TryParse(configValue, out var minutos) && minutos > 0 ? minutos : 60;
+        }
+
+        /// <summary>
+        /// Retorna o tempo de expiracao do token de recuperacao de senha (minutos).
+        /// </summary>
+        private int GetRecuperacaoSenhaExpiracaoMinutos()
+        {
+            var configValue = _configuration["PasswordReset:TokenExpirationMinutes"];
+            return int.TryParse(configValue, out var minutos) && minutos > 0 ? minutos : 30;
         }
 
         /// <summary>
@@ -397,22 +530,102 @@ namespace WebSafeDockingAPI.Services
         }
 
         /// <summary>
+        /// Monta o link de recuperacao de senha enviado por e-mail.
+        /// </summary>
+        private string BuildRecuperacaoSenhaLink(string token)
+        {
+            var baseUrl = _configuration["PasswordReset:BaseUrl"];
+            if (string.IsNullOrWhiteSpace(baseUrl))
+            {
+                baseUrl = "https://www.w3soft3.com.br/w3SafeDocking/#";
+            }
+
+            var path = _configuration["PasswordReset:Path"];
+            if (string.IsNullOrWhiteSpace(path))
+            {
+                path = "/redefinir-senha";
+            }
+
+            var normalizedPath = path.StartsWith('/') ? path : "/" + path;
+            return $"{baseUrl.TrimEnd('/')}{normalizedPath}?token={Uri.EscapeDataString(token)}";
+        }
+
+        /// <summary>
         /// Gera o corpo HTML do e-mail de primeiro acesso.
         /// </summary>
         private static string BuildPrimeiroAcessoEmailBody(Usuario usuario, string link, DateTime expiraEmUtc)
         {
             var cpf = MascararCpf(usuario.Cpf);
             var expiracaoTexto = expiraEmUtc.ToLocalTime().ToString("dd/MM/yyyy HH:mm");
+            var nomeExibicao = WebUtility.HtmlEncode(usuario.Nome ?? "usuário");
+            var linkSeguro = WebUtility.HtmlEncode(link);
+            var cpfSeguro = WebUtility.HtmlEncode(cpf);
+            var expiracaoSegura = WebUtility.HtmlEncode(expiracaoTexto);
 
             return $@"
-                <h2>Conta criada com sucesso</h2>
-                <p>Ola, <strong>{WebUtility.HtmlEncode(usuario.Nome ?? "usuario")}</strong>.</p>
-                <p>Seu cadastro foi concluido.</p>
-                <p><strong>CPF:</strong> {WebUtility.HtmlEncode(cpf)}</p>
-                <p>Para definir sua senha de acesso, use o link abaixo:</p>
-                <p><a href='{WebUtility.HtmlEncode(link)}'>Definir senha de primeiro acesso</a></p>
-                <p>Este link expira em: <strong>{WebUtility.HtmlEncode(expiracaoTexto)}</strong>.</p>
-                <p>Se voce nao solicitou este acesso, ignore este e-mail.</p>";
+                <div style='margin: 0; padding: 24px; background: #f3f4f6; font-family: Arial, Helvetica, sans-serif; color: #1f2937; line-height: 1.6;'>
+                    <div style='max-width: 620px; margin: 0 auto; background: #ffffff; border: 1px solid #e5e7eb; border-radius: 10px; padding: 24px;'>
+                        <h2 style='margin: 0 0 12px;'>Conta criada com sucesso</h2>
+                        <p style='margin-top: 0;'>Olá, <strong>{nomeExibicao}</strong>.</p>
+                        <p>Seu cadastro no <strong>W3 SafeDocking</strong> foi concluído. Para finalizar o primeiro acesso, defina sua senha clicando no botão abaixo.</p>
+
+                        <div style='background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; padding: 12px 14px; margin: 16px 0;'>
+                            <p style='margin: 0;'><strong>CPF:</strong> {cpfSeguro}</p>
+                            <p style='margin: 6px 0 0;'><strong>Validade do link:</strong> {expiracaoSegura}</p>
+                        </div>
+
+                        <p style='margin: 24px 0 16px;'>
+                            <a href='{linkSeguro}'
+                               style='background: #0d6efd; color: #ffffff; text-decoration: none; padding: 12px 18px; border-radius: 6px; display: inline-block; font-weight: 600;'>
+                               Definir senha de acesso
+                            </a>
+                        </p>
+
+                        <p style='margin: 0 0 8px;'>Se o botão não funcionar, copie e cole este link no navegador:</p>
+                        <p style='margin: 0; word-break: break-all; color: #0d6efd; font-size: 14px;'>{linkSeguro}</p>
+
+                        <p style='margin: 20px 0 0; font-size: 14px; color: #4b5563;'>Se você não reconhece esta criação de conta, ignore este e-mail.</p>
+                    </div>
+                </div>";
+        }
+
+        /// <summary>
+        /// Gera o corpo HTML do e-mail de recuperacao de senha.
+        /// </summary>
+        private static string BuildRecuperacaoSenhaEmailBody(Usuario usuario, string link, DateTime expiraEmUtc)
+        {
+            var cpf = MascararCpf(usuario.Cpf);
+            var expiracaoTexto = expiraEmUtc.ToLocalTime().ToString("dd/MM/yyyy HH:mm");
+            var nomeExibicao = WebUtility.HtmlEncode(usuario.Nome ?? "usuário");
+            var linkSeguro = WebUtility.HtmlEncode(link);
+            var cpfSeguro = WebUtility.HtmlEncode(cpf);
+            var expiracaoSegura = WebUtility.HtmlEncode(expiracaoTexto);
+
+            return $@"
+                <div style='margin: 0; padding: 24px; background: #f3f4f6; font-family: Arial, Helvetica, sans-serif; color: #1f2937; line-height: 1.6;'>
+                    <div style='max-width: 620px; margin: 0 auto; background: #ffffff; border: 1px solid #e5e7eb; border-radius: 10px; padding: 24px;'>
+                        <h2 style='margin: 0 0 12px;'>Recuperação de senha</h2>
+                        <p style='margin-top: 0;'>Olá, <strong>{nomeExibicao}</strong>.</p>
+                        <p>Recebemos uma solicitação para redefinir sua senha no <strong>W3 SafeDocking</strong>.</p>
+
+                        <div style='background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; padding: 12px 14px; margin: 16px 0;'>
+                            <p style='margin: 0;'><strong>CPF:</strong> {cpfSeguro}</p>
+                            <p style='margin: 6px 0 0;'><strong>Validade do link:</strong> {expiracaoSegura}</p>
+                        </div>
+
+                        <p style='margin: 24px 0 16px;'>
+                            <a href='{linkSeguro}'
+                               style='background: #0d6efd; color: #ffffff; text-decoration: none; padding: 12px 18px; border-radius: 6px; display: inline-block; font-weight: 600;'>
+                               Redefinir minha senha
+                            </a>
+                        </p>
+
+                        <p style='margin: 0 0 8px;'>Se o botão não funcionar, copie e cole este link no navegador:</p>
+                        <p style='margin: 0; word-break: break-all; color: #0d6efd; font-size: 14px;'>{linkSeguro}</p>
+
+                        <p style='margin: 20px 0 0; font-size: 14px; color: #4b5563;'>Se você não solicitou esta alteração, ignore este e-mail.</p>
+                    </div>
+                </div>";
         }
 
         /// <summary>
@@ -480,7 +693,7 @@ namespace WebSafeDockingAPI.Services
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Falha ao enviar email de primeiro acesso para {Destinatario}", toAddress);
+                _logger.LogError(ex, "Falha ao enviar e-mail para {Destinatario}", toAddress);
                 return false;
             }
         }

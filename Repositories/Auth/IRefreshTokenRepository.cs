@@ -1,10 +1,10 @@
-using WebSafeDockingAPI.Models;
+﻿using WebSafeDockingAPI.Models;
 
 namespace WebSafeDockingAPI.Repositories
 {
     /// <summary>
-    /// Interface do repositório de Refresh Tokens.
-    /// Define as operações de acesso ao banco de dados para gerenciar refresh tokens.
+    /// Interface do repositorio de Refresh Tokens.
+    /// Define operacoes de acesso ao banco para gerenciar refresh tokens.
     /// </summary>
     public interface IRefreshTokenRepository
     {
@@ -24,13 +24,18 @@ namespace WebSafeDockingAPI.Repositories
         Task AtualizarAsync(RefreshToken refreshToken);
 
         /// <summary>
-        /// Busca um usuário pelo CPF (usado no login).
+        /// Busca um usuario pelo CPF (usado no login).
         /// </summary>
         Task<Usuario?> BuscarUsuarioPorCpfAsync(string cpf);
 
         /// <summary>
-        /// Busca um usuário pelo ID (usado no refresh).
+        /// Busca um usuario pelo ID (usado no refresh).
         /// </summary>
         Task<Usuario?> BuscarUsuarioPorIdAsync(int id);
+
+        /// <summary>
+        /// Revoga todos os refresh tokens ativos de um usuario.
+        /// </summary>
+        Task RevogarTodosPorUsuarioAsync(int usuarioId);
     }
 }
