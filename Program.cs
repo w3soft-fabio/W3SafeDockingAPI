@@ -44,6 +44,22 @@ builder.Services.AddScoped<AlarmThresholdService>();
 builder.Services.AddScoped<IUsuarioRepository, UsuarioRepository>();
 builder.Services.AddScoped<UsuarioService>();
 
+// ---- Repository e Service para Grupo ----
+builder.Services.AddScoped<IGrupoRepository, GrupoRepository>();
+builder.Services.AddScoped<GrupoService>();
+
+// ---- Repository e Service para Recurso ----
+builder.Services.AddScoped<IRecursoRepository, RecursoRepository>();
+builder.Services.AddScoped<RecursoService>();
+
+// ---- Repository e Service para GrupoRecurso ----
+builder.Services.AddScoped<IGrupoRecursoRepository, GrupoRecursoRepository>();
+builder.Services.AddScoped<GrupoRecursoService>();
+
+// ---- Repository e Service para GrupoUsuario ----
+builder.Services.AddScoped<IGrupoUsuarioRepository, GrupoUsuarioRepository>();
+builder.Services.AddScoped<GrupoUsuarioService>();
+
 // ---- Repository e Service para BerthSnapshot ----
 builder.Services.AddScoped<IBerthSnapshotRepository, BerthSnapshotRepository>();
 builder.Services.AddScoped<BerthSnapshotService>();
@@ -60,8 +76,14 @@ builder.Services.AddScoped<ShippingAgencyService>();
 builder.Services.AddScoped<IBerthingRepository, BerthingRepository>();
 builder.Services.AddScoped<BerthingService>();
 
+// ---- Repository e Service para EmailConta ----
+builder.Services.AddScoped<IEmailContaRepository, EmailContaRepository>();
+builder.Services.AddScoped<EmailContaService>();
+
 // ---- Repository e Service para Autenticação (JWT) ----
 builder.Services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
+builder.Services.AddScoped<IPrimeiroAcessoTokenRepository, PrimeiroAcessoTokenRepository>();
+builder.Services.AddScoped<IRecuperacaoSenhaTokenRepository, RecuperacaoSenhaTokenRepository>();
 builder.Services.AddScoped<PasswordHasherService>();
 builder.Services.AddScoped<AuthService>();
 

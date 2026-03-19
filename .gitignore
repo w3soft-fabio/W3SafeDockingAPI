@@ -35,3 +35,9 @@ logs/
 
 # Temporary PDFs
 wwwroot/temp-pdfs/*.pdf
+
+# Temporary build files
+.tmp-build/
+
+# Publish profiles
+Properties/PublishProfiles/

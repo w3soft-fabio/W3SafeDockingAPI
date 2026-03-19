@@ -1,3 +1,4 @@
+﻿using WebSafeDockingAPI.Exceptions;
 using WebSafeDockingAPI.Models;
 using WebSafeDockingAPI.Models.Common;
 using WebSafeDockingAPI.Repositories;
@@ -9,15 +10,23 @@ namespace WebSafeDockingAPI.Services
     {
         private readonly IUsuarioRepository _repository;
         private readonly PasswordHasherService _passwordHasher;
+        private readonly AuthService _authService;
+        private readonly ILogger<UsuarioService> _logger;
 
-        public UsuarioService(IUsuarioRepository repository, PasswordHasherService passwordHasher)
+        public UsuarioService(
+            IUsuarioRepository repository,
+            PasswordHasherService passwordHasher,
+            AuthService authService,
+            ILogger<UsuarioService> logger)
         {
             _repository = repository;
             _passwordHasher = passwordHasher;
+            _authService = authService;
+            _logger = logger;
         }
 
         /// <summary>
-        /// Busca um usuário pelo ID.
+        /// Busca um usuario pelo ID.
         /// </summary>
         public async Task<UsuarioResponseDTO?> GetByIdAsync(int id)
         {
@@ -26,25 +35,41 @@ namespace WebSafeDockingAPI.Services
         }
 
         /// <summary>
-        /// Cria um novo usuário.
+        /// Cria um novo usuario e envia o link de primeiro acesso por email.
         /// </summary>
         public async Task<UsuarioResponseDTO> CriarUsuarioAsync(UsuarioCreateUpdateDTO dto)
         {
-            var novoUsuario = dto.ToEntity();
-
-            // Se a senha foi informada, gera o hash antes de salvar
-            if (!string.IsNullOrEmpty(dto.SenhaHash))
+            if (string.IsNullOrWhiteSpace(dto.Cpf))
             {
-                novoUsuario.SenhaHash = _passwordHasher.HashPassword(dto.SenhaHash);
+                throw new ValidationException("O CPF e obrigatorio para criar usuario.");
             }
 
+            if (string.IsNullOrWhiteSpace(dto.Email))
+            {
+                throw new ValidationException("O e-mail e obrigatorio para envio do primeiro acesso.");
+            }
+
+            var novoUsuario = dto.ToEntity();
+
+            // Primeiro acesso: senha sera definida pelo link enviado por e-mail
+            novoUsuario.SenhaHash = string.Empty;
+            novoUsuario.Ativo = false;
+
             var usuarioCriado = await _repository.CreateAsync(novoUsuario);
+
+            var emailEnviado = await _authService.EnviarPrimeiroAcessoAsync(usuarioCriado);
+            if (!emailEnviado)
+            {
+                _logger.LogWarning(
+                    "Usuario {UsuarioId} criado, mas o e-mail de primeiro acesso nao foi enviado.",
+                    usuarioCriado.Id);
+            }
 
             return UsuarioResponseDTO.FromUsuario(usuarioCriado);
         }
 
         /// <summary>
-        /// Atualiza um usuário existente.
+        /// Atualiza um usuario existente.
         /// </summary>
         public async Task<UsuarioResponseDTO?> AtualizarUsuarioAsync(int id, UsuarioCreateUpdateDTO dto)
         {
@@ -56,7 +81,7 @@ namespace WebSafeDockingAPI.Services
             usuarioExistente.Cpf = dto.Cpf;
             usuarioExistente.NivelAcesso = dto.NivelAcesso;
 
-            // Se a senha foi informada, gera o hash; senão, mantém a senha atual
+            // Se a senha foi informada, gera o hash; senao, mantem a senha atual
             if (!string.IsNullOrEmpty(dto.SenhaHash))
             {
                 usuarioExistente.SenhaHash = _passwordHasher.HashPassword(dto.SenhaHash);
@@ -74,13 +99,13 @@ namespace WebSafeDockingAPI.Services
         }
 
         /// <summary>
-        /// Deleta um usuário pelo ID.
+        /// Deleta um usuario pelo ID.
         /// </summary>
         public async Task<bool> DeletarUsuarioAsync(int id) =>
             await _repository.DeleteAsync(id);
 
         /// <summary>
-        /// Busca usuários com paginação estilo Supabase.
+        /// Busca usuarios com paginacao estilo Supabase.
         /// </summary>
         public async Task<PaginatedResponse<UsuarioResponseDTO>> SearchUsuariosAsync(
             PaginationRequest request)

@@ -1,12 +1,11 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using WebSafeDockingAPI.Data;
 using WebSafeDockingAPI.Models;
 
 namespace WebSafeDockingAPI.Repositories
 {
     /// <summary>
-    /// Repositório que acessa o banco de dados para operações de autenticação.
-    /// Gerencia refresh tokens e busca de usuários para login.
+    /// Repositorio que acessa o banco para operacoes de autenticacao.
     /// </summary>
     public class RefreshTokenRepository : IRefreshTokenRepository
     {
@@ -28,8 +27,8 @@ namespace WebSafeDockingAPI.Repositories
         }
 
         /// <summary>
-        /// Busca um refresh token pelo valor do token (string).
-        /// Inclui os dados do usuário associado.
+        /// Busca um refresh token pelo valor do token.
+        /// Inclui os dados do usuario associado.
         /// </summary>
         public async Task<RefreshToken?> BuscarPorTokenAsync(string token)
         {
@@ -39,7 +38,7 @@ namespace WebSafeDockingAPI.Repositories
         }
 
         /// <summary>
-        /// Atualiza um refresh token existente (ex: marcar como revogado).
+        /// Atualiza um refresh token existente.
         /// </summary>
         public async Task AtualizarAsync(RefreshToken refreshToken)
         {
@@ -48,20 +47,50 @@ namespace WebSafeDockingAPI.Repositories
         }
 
         /// <summary>
-        /// Busca um usuário pelo CPF para autenticação no login.
+        /// Busca um usuario pelo CPF para autenticacao no login.
         /// </summary>
         public async Task<Usuario?> BuscarUsuarioPorCpfAsync(string cpf)
         {
+            if (string.IsNullOrWhiteSpace(cpf))
+                return null;
+
+            var cpfNormalizado = new string(cpf.Where(char.IsDigit).ToArray());
+
             return await _context.Usuarios
-                .FirstOrDefaultAsync(u => u.Cpf == cpf);
+                .FirstOrDefaultAsync(u =>
+                    u.Cpf != null &&
+                    (
+                        u.Cpf == cpf ||
+                        u.Cpf == cpfNormalizado ||
+                        u.Cpf.Replace(".", "").Replace("-", "") == cpfNormalizado
+                    ));
         }
 
         /// <summary>
-        /// Busca um usuário pelo ID (usado ao renovar o token).
+        /// Busca um usuario pelo ID (usado ao renovar o token).
         /// </summary>
         public async Task<Usuario?> BuscarUsuarioPorIdAsync(int id)
         {
             return await _context.Usuarios.FindAsync(id);
+        }
+
+        /// <summary>
+        /// Revoga todos os refresh tokens ativos de um usuario.
+        /// </summary>
+        public async Task RevogarTodosPorUsuarioAsync(int usuarioId)
+        {
+            var tokensAtivos = await _context.RefreshTokens
+                .Where(rt => rt.UsuarioId == usuarioId && !rt.Revogado && rt.ExpiraEm > DateTime.UtcNow)
+                .ToListAsync();
+
+            if (tokensAtivos.Count == 0) return;
+
+            foreach (var token in tokensAtivos)
+            {
+                token.Revogado = true;
+            }
+
+            await _context.SaveChangesAsync();
         }
     }
 }
