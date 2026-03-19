@@ -5,6 +5,7 @@ namespace WebSafeDockingAPI.Repositories
     public interface IEmailContaRepository
     {
         Task<EmailConta?> GetByIdAsync(int id);
+        Task<EmailConta?> GetDefaultAsync();
         Task<EmailConta> CreateAsync(EmailConta emailConta);
         Task<bool> UpdateAsync(EmailConta emailConta);
         Task<bool> DeleteAsync(int id);

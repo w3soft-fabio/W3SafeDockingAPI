@@ -18,6 +18,13 @@ namespace WebSafeDockingAPI.Repositories
             return await _context.EmailContas.FindAsync(id);
         }
 
+        public async Task<EmailConta?> GetDefaultAsync()
+        {
+            return await _context.EmailContas
+                .OrderBy(ec => ec.ContaID)
+                .FirstOrDefaultAsync();
+        }
+
         public async Task<EmailConta> CreateAsync(EmailConta emailConta)
         {
             _context.EmailContas.Add(emailConta);
