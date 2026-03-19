@@ -33,8 +33,11 @@ Thumbs.db
 logs/
 *.log
 
-// Temporary build files
+# Temporary PDFs
+wwwroot/temp-pdfs/*.pdf
+
+# Temporary build files
 .tmp-build/
 
-// Publish profiles
+# Publish profiles
 Properties/PublishProfiles/

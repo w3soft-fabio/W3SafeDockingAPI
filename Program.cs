@@ -1,13 +1,17 @@
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using QuestPDF.Infrastructure;
 using WebSafeDockingAPI.Data;
 using WebSafeDockingAPI.Filters;
 using WebSafeDockingAPI.Models;
 using WebSafeDockingAPI.Repositories;
 using WebSafeDockingAPI.Services;
+
+QuestPDF.Settings.License = LicenseType.Community;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -173,12 +177,13 @@ builder.Services.AddSwaggerGen(options =>
     });
 }); // Documentação automática da API
 
-// ---- CORS (permite Flutter e qualquer frontend acessar a API) ----
+// ---- CORS (origens permitidas definidas em appsettings.json > AllowedOrigins) ----
+var allowedOrigins = builder.Configuration.GetSection("AllowedOrigins").Get<string[]>() ?? [];
 builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy =>
     {
-        policy.AllowAnyOrigin()
+        policy.WithOrigins(allowedOrigins)
               .AllowAnyMethod()
               .AllowAnyHeader();
     });
@@ -186,9 +191,18 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
+// ---- Garantir que a pasta de PDFs temporários exista ----
+var webRootPath = app.Environment.WebRootPath
+    ?? Path.Combine(app.Environment.ContentRootPath, "wwwroot");
+Directory.CreateDirectory(Path.Combine(webRootPath, "temp-pdfs"));
+
 // ---- Pipeline HTTP ----
 app.UseHttpsRedirection();
 app.UseCors();
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new PhysicalFileProvider(webRootPath)
+});
 
 // Autenticação e Autorização JWT (a ordem importa!)
 app.UseAuthentication();

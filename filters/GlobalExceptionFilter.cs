@@ -31,3 +31,4 @@ public class GlobalExceptionFilter(ILogger<GlobalExceptionFilter> logger) : IExc
         context.ExceptionHandled = true;
     }
 }
+    

@@ -1,3 +1,5 @@
+using QuestPDF.Fluent;
+using WebSafeDockingAPI.Exceptions;
 using WebSafeDockingAPI.Models;
 using WebSafeDockingAPI.Models.Common;
 using WebSafeDockingAPI.Repositories;
@@ -11,17 +13,20 @@ namespace WebSafeDockingAPI.Services
         private readonly IShipRepository _shipRepository;
         private readonly IMooringCompanyRepository _mooringCompanyRepository;
         private readonly IShippingAgencyRepository _shippingAgencyRepository;
+        private readonly IWebHostEnvironment _env;
 
         public BerthingService(
             IBerthingRepository repository,
             IShipRepository shipRepository,
             IMooringCompanyRepository mooringCompanyRepository,
-            IShippingAgencyRepository shippingAgencyRepository)
+            IShippingAgencyRepository shippingAgencyRepository,
+            IWebHostEnvironment env)
         {
             _repository = repository;
             _shipRepository = shipRepository;
             _mooringCompanyRepository = mooringCompanyRepository;
             _shippingAgencyRepository = shippingAgencyRepository;
+            _env = env;
         }
 
         public async Task<BerthingResponseDTO?> GetByIdAsync(int id)
@@ -67,6 +72,33 @@ namespace WebSafeDockingAPI.Services
 
         public async Task<bool> DeletarBerthingAsync(int id) =>
             await _repository.DeleteAsync(id);
+
+        public async Task<string> GerarRelatorioPdfAsync(
+            DateTime dataInicial,
+            DateTime dataFinal,
+            int? shipID,
+            HttpRequest request)
+        {
+            var berthings = await _repository.GetBerthingsForReportAsync(dataInicial, dataFinal, shipID);
+
+            if (berthings.Count == 0)
+                throw new NotFoundException("Nenhuma atracação encontrada no período informado.");
+
+            var document = new BerthingReportDocument(berthings, dataInicial, dataFinal);
+            var pdfBytes = document.GeneratePdf();
+
+            var webRootPath = _env.WebRootPath
+                ?? Path.Combine(_env.ContentRootPath, "wwwroot");
+            var tempDir = Path.Combine(webRootPath, "temp-pdfs");
+            Directory.CreateDirectory(tempDir);
+
+            var fileName = $"{Guid.NewGuid()}.pdf";
+            var filePath = Path.Combine(tempDir, fileName);
+            await File.WriteAllBytesAsync(filePath, pdfBytes);
+
+            var url = $"{request.Scheme}://{request.Host}/temp-pdfs/{fileName}";
+            return url;
+        }
 
         public async Task<PaginatedResponse<BerthingResponseDTO>> SearchBerthingsAsync(
             PaginationRequest request)
