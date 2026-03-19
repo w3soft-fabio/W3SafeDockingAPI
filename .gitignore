@@ -34,7 +34,7 @@ logs/
 *.log
 
 # Temporary PDFs
-wwwroot/temp-pdfs/*.pdf
+/reportsTemp/
 
 # Temporary build files
 .tmp-build/

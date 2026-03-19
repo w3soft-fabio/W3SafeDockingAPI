@@ -87,16 +87,14 @@ namespace WebSafeDockingAPI.Services
             var document = new BerthingReportDocument(berthings, dataInicial, dataFinal);
             var pdfBytes = document.GeneratePdf();
 
-            var webRootPath = _env.WebRootPath
-                ?? Path.Combine(_env.ContentRootPath, "wwwroot");
-            var tempDir = Path.Combine(webRootPath, "temp-pdfs");
+            var tempDir = Path.Combine(_env.ContentRootPath, "reportsTemp");
             Directory.CreateDirectory(tempDir);
 
             var fileName = $"{Guid.NewGuid()}.pdf";
             var filePath = Path.Combine(tempDir, fileName);
             await File.WriteAllBytesAsync(filePath, pdfBytes);
 
-            var url = $"{request.Scheme}://{request.Host}/temp-pdfs/{fileName}";
+            var url = $"{request.Scheme}://{request.Host}/reportsTemp/{fileName}";
             return url;
         }
 

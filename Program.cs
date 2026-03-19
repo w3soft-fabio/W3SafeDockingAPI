@@ -192,16 +192,16 @@ builder.Services.AddCors(options =>
 var app = builder.Build();
 
 // ---- Garantir que a pasta de PDFs temporários exista ----
-var webRootPath = app.Environment.WebRootPath
-    ?? Path.Combine(app.Environment.ContentRootPath, "wwwroot");
-Directory.CreateDirectory(Path.Combine(webRootPath, "temp-pdfs"));
+var reportsTempPath = Path.Combine(app.Environment.ContentRootPath, "reportsTemp");
+Directory.CreateDirectory(reportsTempPath);
 
 // ---- Pipeline HTTP ----
 app.UseHttpsRedirection();
 app.UseCors();
 app.UseStaticFiles(new StaticFileOptions
 {
-    FileProvider = new PhysicalFileProvider(webRootPath)
+    FileProvider = new PhysicalFileProvider(reportsTempPath),
+    RequestPath = "/reportsTemp"
 });
 
 // Autenticação e Autorização JWT (a ordem importa!)
