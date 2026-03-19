@@ -105,5 +105,22 @@ namespace WebSafeDockingAPI.Repositories
                 _                          => query.OrderBy(b => b.BerthingID)
             };
         }
+
+        public async Task<List<Berthing>> GetBerthingsForReportAsync(
+            DateTime dataInicial,
+            DateTime dataFinal,
+            int? shipID)
+        {
+            var query = _context.Berthings
+                .Include(b => b.Ship)
+                .Include(b => b.MooringCompany)
+                .Include(b => b.ShippingAgency)
+                .Where(b => b.ArrivalAt >= dataInicial && b.ArrivalAt <= dataFinal);
+
+            if (shipID.HasValue)
+                query = query.Where(b => b.ShipID == shipID.Value);
+
+            return await query.OrderBy(b => b.ArrivalAt).ToListAsync();
+        }
     }
 }

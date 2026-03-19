@@ -1,13 +1,17 @@
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using QuestPDF.Infrastructure;
 using WebSafeDockingAPI.Data;
 using WebSafeDockingAPI.Filters;
 using WebSafeDockingAPI.Models;
 using WebSafeDockingAPI.Repositories;
 using WebSafeDockingAPI.Services;
+
+QuestPDF.Settings.License = LicenseType.Community;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -165,9 +169,18 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
+// ---- Garantir que a pasta de PDFs temporários exista ----
+var webRootPath = app.Environment.WebRootPath
+    ?? Path.Combine(app.Environment.ContentRootPath, "wwwroot");
+Directory.CreateDirectory(Path.Combine(webRootPath, "temp-pdfs"));
+
 // ---- Pipeline HTTP ----
 app.UseHttpsRedirection();
 app.UseCors();
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new PhysicalFileProvider(webRootPath)
+});
 
 // Autenticação e Autorização JWT (a ordem importa!)
 app.UseAuthentication();

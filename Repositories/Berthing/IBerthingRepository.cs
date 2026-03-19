@@ -15,5 +15,10 @@ namespace WebSafeDockingAPI.Repositories
             string? searchTerm,
             string sortBy,
             string sortOrder);
+
+        Task<List<Berthing>> GetBerthingsForReportAsync(
+            DateTime dataInicial,
+            DateTime dataFinal,
+            int? shipID);
     }
 }

@@ -187,5 +187,32 @@ namespace WebSafeDockingAPI.Controllers
 
             return NoContent();
         }
+
+        /// <summary>
+        /// GET: api/berthings/relatorio-pdf
+        /// Gera um relatório PDF de atracações filtrado por período e, opcionalmente, por navio.
+        /// </summary>
+        [HttpGet("relatorio-pdf")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> GerarRelatorioPdf(
+            [FromQuery] DateTime dataInicial,
+            [FromQuery] DateTime dataFinal,
+            [FromQuery] int? shipID)
+        {
+            if (dataInicial > dataFinal)
+            {
+                return BadRequest(new ProblemDetails
+                {
+                    Title = "Período inválido",
+                    Detail = "A data inicial não pode ser posterior à data final.",
+                    Status = StatusCodes.Status400BadRequest
+                });
+            }
+
+            var url = await _service.GerarRelatorioPdfAsync(dataInicial, dataFinal, shipID, Request);
+            return Ok(new { url });
+        }
     }
 }
