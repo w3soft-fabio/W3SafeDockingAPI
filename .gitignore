@@ -34,4 +34,4 @@ logs/
 *.log
 
 # Temporary PDFs
-wwwroot/reports/*.pdf
+wwwroot/temp-pdfs/*.pdf
