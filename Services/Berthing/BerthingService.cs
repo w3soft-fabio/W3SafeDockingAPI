@@ -94,7 +94,8 @@ namespace WebSafeDockingAPI.Services
             var filePath = Path.Combine(tempDir, fileName);
             await File.WriteAllBytesAsync(filePath, pdfBytes);
 
-            var url = $"{request.Scheme}://{request.Host}/reportsTemp/{fileName}";
+            //var url = $"{request.Scheme}://{request.Host}/reportsTemp/{fileName}"; //debug
+            var url = $"https://w3soft3.com.br/W3SafeDockingAPI/reportsTemp/{fileName}"; //prod
             return url;
         }
 
