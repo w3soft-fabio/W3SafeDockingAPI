@@ -7,7 +7,7 @@ namespace WebSafeDockingAPI.Models
     public class MooringPattern
     {
         [Key]
-        [DatabaseGenerated(DatabaseGeneratedOption.None)]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         [Column("id")]
         public long Id { get; set; }
 

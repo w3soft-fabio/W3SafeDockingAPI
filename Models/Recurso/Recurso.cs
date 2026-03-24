@@ -7,7 +7,7 @@ namespace WebSafeDockingAPI.Models
     public class Recurso
     {
         [Key]
-        [DatabaseGenerated(DatabaseGeneratedOption.None)]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         [StringLength(10)]
         [Column("recursoChave")]
         public string RecursoChave { get; set; } = string.Empty;

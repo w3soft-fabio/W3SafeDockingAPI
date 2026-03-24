@@ -8,7 +8,9 @@ namespace WebSafeDockingAPI.Models
     {
         [Key]
         [Column("id")]
-        [DatabaseGenerated(DatabaseGeneratedOption.None)]
+        //DatabaseGeneratedOption.Identity para permitir IDs gerados automaticamente pelo banco
+        // (ex: 1 para Berthing, 2 para Drifting)
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
 
         [Required]
