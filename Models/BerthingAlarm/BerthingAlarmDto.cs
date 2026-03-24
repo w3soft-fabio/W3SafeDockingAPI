@@ -7,9 +7,6 @@ namespace WebSafeDockingAPI.Models
     /// </summary>
     public class BerthingAlarmCreateUpdateDTO
     {
-        [Required(ErrorMessage = "O campo Id é obrigatório.")]
-        public int Id { get; set; }
-
         public decimal? MaxShipAngle { get; set; }
 
         public decimal? ZcMinRange { get; set; }
@@ -43,7 +40,6 @@ namespace WebSafeDockingAPI.Models
         {
             return new BerthingAlarm
             {
-                Id = this.Id,
                 MaxShipAngle = this.MaxShipAngle,
                 ZcMinRange = this.ZcMinRange,
                 ZcMaxRange = this.ZcMaxRange,

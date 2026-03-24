@@ -29,7 +29,6 @@ namespace WebSafeDockingAPI.Models
         {
             return new AlarmThreshold
             {
-                Id = this.Id,
                 Name = this.Name,
                 BerthingID = this.BerthingID,
                 DriftingID = this.DriftingID,

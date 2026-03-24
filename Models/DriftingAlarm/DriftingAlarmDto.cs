@@ -7,9 +7,6 @@ namespace WebSafeDockingAPI.Models
     /// </summary>
     public class DriftingAlarmCreateUpdateDTO
     {
-        [Required(ErrorMessage = "O campo Id é obrigatório.")]
-        public int Id { get; set; }
-
         public decimal? MaxShipAngle { get; set; }
 
         public decimal? OutboundWarning { get; set; }
@@ -27,7 +24,6 @@ namespace WebSafeDockingAPI.Models
         {
             return new DriftingAlarm
             {
-                Id = this.Id,
                 MaxShipAngle = this.MaxShipAngle,
                 OutboundWarning = this.OutboundWarning,
                 OutboundAlarm = this.OutboundAlarm,

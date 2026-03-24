@@ -7,9 +7,6 @@ namespace WebSafeDockingAPI.Models
     /// </summary>
     public class MooringPatternCreateUpdateDTO
     {
-        [Required(ErrorMessage = "O ID é obrigatório.")]
-        public long Id { get; set; }
-
         [Required(ErrorMessage = "O nome é obrigatório.")]
         [StringLength(255, ErrorMessage = "O nome deve ter no máximo 255 caracteres.")]
         public string Name { get; set; } = string.Empty;
@@ -95,7 +92,6 @@ namespace WebSafeDockingAPI.Models
         {
             return new MooringPattern
             {
-                Id = this.Id,
                 Name = this.Name,
                 JettyID = this.JettyID,
                 Qrh1H1 = this.Qrh1H1, Qrh1H2 = this.Qrh1H2, Qrh1H3 = this.Qrh1H3, Qrh1H4 = this.Qrh1H4,
