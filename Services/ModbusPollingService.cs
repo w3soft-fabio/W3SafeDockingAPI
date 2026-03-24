@@ -73,7 +73,8 @@ public class ModbusPollingService : BackgroundService
                 _notifier.Notify(snapshot);
 
                 // Persiste o snapshot no banco de dados
-                await SalvarSnapshotAsync(snapshot);
+                //TODO: Analisar quais dados realmente precisamos salvar para otimizar o armazenamento
+                // await SalvarSnapshotAsync(snapshot);
             }
             catch (Exception ex)
             {
